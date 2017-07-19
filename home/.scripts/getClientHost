@@ -1,0 +1,19 @@
+#!/bin/bash
+
+#Finds incomming connection in ~/.ssh/config and returns host alias
+#TODO: Reverse dns for hosts that cannot be found in config
+#TODO: traverse ssh chain to origin (ie, if tunneling through a gateway machine, we need to find the origin)
+
+client=${SSH_CLIENT%% *}
+name=$(awk '/'$client'/ { print x; exit(0); }; { x=$2 }' ~/.ssh/config)
+if [ -z "$name" ]; then
+    #Host wasn't found in ssh/config
+    lookup=$(host $client | awk '{ print $NF }')
+    lookup=${lookup%.}
+    #specific host problems
+    [ "${lookup%[0-9]*}" == "vayu" ] && lookup="Vayu"
+
+    name=$lookup
+fi
+
+echo $name
